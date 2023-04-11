@@ -36,10 +36,8 @@ namespace LuaGuild
         });
 #else
         {
-#ifdef TRINITY
-            boost::shared_lock<boost::shared_mutex> lock(*HashMapHolder<Player>::GetLock());
-#elif defined(AZEROTHCORE)
-            ACORE_READ_GUARD(HashMapHolder<Player>::LockType, *HashMapHolder<Player>::GetLock());
+#if defined TRINITY || AZEROTHCORE
+            std::shared_lock<std::shared_mutex> lock(*HashMapHolder<Player>::GetLock());
 #else
             HashMapHolder<Player>::ReadGuard g(HashMapHolder<Player>::GetLock());
 #endif
@@ -94,7 +92,7 @@ namespace LuaGuild
     /**
      * Returns [Guild] leader GUID
      *
-     * @return uint64 leaderGUID
+     * @return ObjectGuid leaderGUID
      */
     int GetLeaderGUID(lua_State* L, Guild* guild)
     {
@@ -277,8 +275,7 @@ namespace LuaGuild
         CharacterDatabaseTransaction trans(nullptr);
         guild->DeleteMember(trans, player->GET_GUID(), isDisbanding);
 #elif defined AZEROTHCORE
-        SQLTransaction trans(nullptr);
-        guild->DeleteMember(trans, player->GET_GUID(), isDisbanding);
+        guild->DeleteMember(player->GET_GUID(), isDisbanding);
 #else
         guild->DelMember(player->GET_GUID(), isDisbanding);
 #endif

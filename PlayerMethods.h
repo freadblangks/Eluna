@@ -335,7 +335,11 @@ namespace LuaPlayer
      */
     int IsMoving(lua_State* L, Player* player) // enable for unit when mangos support it
     {
+#ifdef CMANGOS
+        Eluna::Push(L, player->IsMoving());
+#else
         Eluna::Push(L, player->isMoving());
+#endif
         return 1;
     }
 
@@ -412,7 +416,7 @@ namespace LuaPlayer
      */
     int IsGM(lua_State* L, Player* player)
     {
-#if defined TRINITY || AZEROTHCORE
+#if defined TRINITY || AZEROTHCORE || CMANGOS
         Eluna::Push(L, player->IsGameMaster());
 #else
         Eluna::Push(L, player->isGameMaster());
@@ -910,7 +914,11 @@ namespace LuaPlayer
     {
         float radius = Eluna::CHECKVAL<float>(L, 2);
 
+#ifndef CMANGOS
         Eluna::Push(L, player->GetNextRandomRaidMember(radius));
+#else
+        Eluna::Push(L, player->GetNextRandomRaidMember(radius, SPELL_AURA_NONE));
+#endif
         return 1;
     }
 
@@ -1014,8 +1022,11 @@ namespace LuaPlayer
     int GetSkillTempBonusValue(lua_State* L, Player* player)
     {
         uint32 skill = Eluna::CHECKVAL<uint32>(L, 2);
-
+#ifdef CMANGOS
+        Eluna::Push(L, player->GetSkillBonusTemporary(skill));
+#else
         Eluna::Push(L, player->GetSkillTempBonusValue(skill));
+#endif
         return 1;
     }
 
@@ -1028,8 +1039,11 @@ namespace LuaPlayer
     int GetSkillPermBonusValue(lua_State* L, Player* player)
     {
         uint32 skill = Eluna::CHECKVAL<uint32>(L, 2);
-
+#ifdef CMANGOS
+        Eluna::Push(L, player->GetSkillBonusPermanent(skill));
+#else
         Eluna::Push(L, player->GetSkillPermBonusValue(skill));
+#endif
         return 1;
     }
 
@@ -1042,8 +1056,11 @@ namespace LuaPlayer
     int GetPureSkillValue(lua_State* L, Player* player)
     {
         uint32 skill = Eluna::CHECKVAL<uint32>(L, 2);
-
+#ifdef CMANGOS
+        Eluna::Push(L, player->GetSkillValuePure(skill));
+#else
         Eluna::Push(L, player->GetPureSkillValue(skill));
+#endif
         return 1;
     }
 
@@ -1056,8 +1073,11 @@ namespace LuaPlayer
     int GetBaseSkillValue(lua_State* L, Player* player)
     {
         uint32 skill = Eluna::CHECKVAL<uint32>(L, 2);
-
+#ifdef CMANGOS
+        Eluna::Push(L, player->GetSkillValueBase(skill));
+#else
         Eluna::Push(L, player->GetBaseSkillValue(skill));
+#endif
         return 1;
     }
 
@@ -1084,8 +1104,11 @@ namespace LuaPlayer
     int GetPureMaxSkillValue(lua_State* L, Player* player)
     {
         uint32 skill = Eluna::CHECKVAL<uint32>(L, 2);
-
+#ifdef CMANGOS
+        Eluna::Push(L, player->GetSkillMaxPure(skill));
+#else
         Eluna::Push(L, player->GetPureMaxSkillValue(skill));
+#endif
         return 1;
     }
 
@@ -1098,8 +1121,11 @@ namespace LuaPlayer
     int GetMaxSkillValue(lua_State* L, Player* player)
     {
         uint32 skill = Eluna::CHECKVAL<uint32>(L, 2);
-
+#ifdef CMANGOS
+        Eluna::Push(L, player->GetSkillMax(skill));
+#else
         Eluna::Push(L, player->GetMaxSkillValue(skill));
+#endif
         return 1;
     }
 
@@ -1370,14 +1396,28 @@ namespace LuaPlayer
      *
      * The item can be equipped, in bags or in bank.
      *
-     * @param uint64 guid : an item guid
+     * @param ObjectGuid guid : an item guid
      * @return [Item] item
      */
     int GetItemByGUID(lua_State* L, Player* player)
     {
-        uint64 guid = Eluna::CHECKVAL<uint64>(L, 2);
+        ObjectGuid guid = Eluna::CHECKVAL<ObjectGuid>(L, 2);
 
-        Eluna::Push(L, player->GetItemByGuid(ObjectGuid(guid)));
+        Eluna::Push(L, player->GetItemByGuid(guid));
+        return 1;
+    }
+
+    /**
+     * Returns a mailed [Item] by guid.
+     *
+     * @param ObjectGuid guid : an item guid
+     * @return [Item] item
+     */
+    int GetMailItem(lua_State* L, Player* player)
+    {
+        ObjectGuid guid = Eluna::CHECKVAL<ObjectGuid>(L, 2);
+
+        Eluna::Push(L, player->GetMItem(guid.GetCounter()));
         return 1;
     }
 
@@ -1400,6 +1440,7 @@ namespace LuaPlayer
     /**
      * Returns the database textID of the [WorldObject]'s gossip header text for the [Player]
      *
+     * @param [WorldObject] object
      * @return uint32 textId : key to npc_text database table
      */
     int GetGossipTextId(lua_State* L, Player* player)
@@ -1646,12 +1687,20 @@ namespace LuaPlayer
         if (apply)
         {
             player->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PACIFIED | UNIT_FLAG_SILENCED);
+#ifndef CMANGOS
             player->SetClientControl(player, 0);
+#else
+            player->UpdateClientControl(player, 0);
+#endif
         }
         else
         {
             player->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PACIFIED | UNIT_FLAG_SILENCED);
+#ifndef CMANGOS
             player->SetClientControl(player, 1);
+#else
+            player->UpdateClientControl(player, 1);
+#endif
         }
         return 0;
     }
@@ -1706,7 +1755,7 @@ namespace LuaPlayer
     {
         uint8 race = Eluna::CHECKVAL<uint8>(L, 2);
 
-#ifdef TRINITY
+#if defined(TRINITY) || defined(AZEROTHCORE)
         player->SetFactionForRace(race);
 #else
         player->setFactionForRace(race);
@@ -1779,8 +1828,11 @@ namespace LuaPlayer
     {
         uint32 faction = Eluna::CHECKVAL<uint32>(L, 2);
         int32 value = Eluna::CHECKVAL<int32>(L, 3);
-
+#if defined(CMANGOS) && defined(TBC)
+        FactionEntry const* factionEntry = sFactionStore.LookupEntry<FactionEntry>(faction);
+#else
         FactionEntry const* factionEntry = sFactionStore.LookupEntry(faction);
+#endif
         player->GetReputationMgr().SetReputation(factionEntry, value);
         return 0;
     }
@@ -2057,6 +2109,24 @@ namespace LuaPlayer
             player->SetTitle(t, false);
         return 0;
     }
+
+
+#if defined(TRINITY) || defined(AZEROTHCORE)
+    /**
+     * Adds the specified achievement to the [Player]s
+     *
+     * @param uint32 achievementid
+     */
+    int SetAchievement(lua_State* L, Player* player)
+    {
+        uint32 id = Eluna::CHECKVAL<uint32>(L, 2);
+        AchievementEntry const* t = sAchievementStore.LookupEntry(id);
+        if (t)
+            player->CompletedAchievement(t);
+        return 0;
+    }
+#endif
+
 #endif
 
 #if !defined TRINITY && !AZEROTHCORE
@@ -2068,8 +2138,11 @@ namespace LuaPlayer
     int SetFFA(lua_State* L, Player* player)
     {
         bool apply = Eluna::CHECKVAL<bool>(L, 2, true);
-
+#ifdef CMANGOS
+        player->SetPvPFreeForAll(apply);
+#else
         player->SetFFAPvP(apply);
+#endif
         return 0;
     }
 #endif
@@ -2117,18 +2190,18 @@ namespace LuaPlayer
     /**
      * Shows the mailbox window to the player from specified guid.
      *
-     * @param uint64 guid = playerguid : guid of the mailbox window sender
+     * @param ObjectGuid guid = playerguid : guid of the mailbox window sender
      */
     int SendShowMailBox(lua_State* L, Player* player)
     {
-        uint64 guid = Eluna::CHECKVAL<uint64>(L, 2, player->GET_GUID());
+        ObjectGuid guid = Eluna::CHECKVAL<ObjectGuid>(L, 2, player->GET_GUID());
 
 #if (defined(CLASSIC) || defined(TBC))
         WorldPacket data(CMSG_GET_MAIL_LIST, 8);
-        data << uint64(guid);
+        data << guid;
         player->GetSession()->HandleGetMailList(data);
 #else
-        player->GetSession()->SendShowMailBox(ObjectGuid(guid));
+        player->GetSession()->SendShowMailBox(guid);
 #endif
         return 0;
     }
@@ -2188,10 +2261,14 @@ namespace LuaPlayer
 #else
         float x, y, z;
         summoner->GetPosition(x,y,z);
+#ifndef CMANGOS
         player->SetSummonPoint(summoner->GetMapId(), x, y, z);
+#else
+        player->SetSummonPoint(summoner->GetMapId(), x, y, z, summoner->GetMasterGuid());
+#endif
 
         WorldPacket data(SMSG_SUMMON_REQUEST, 8 + 4 + 4);
-        data << uint64(summoner->GetGUIDLow());
+        data << summoner->GET_GUID();
         data << uint32(summoner->GetZoneId());
         data << uint32(MAX_PLAYER_SUMMON_DELAY * IN_MILLISECONDS);
 #ifdef CMANGOS
@@ -2249,10 +2326,8 @@ namespace LuaPlayer
     {
         Unit* unit = Eluna::CHECKOBJ<Unit>(L, 2);
 
-#ifdef TRINITY
+#if defined(TRINITY) || defined(AZEROTHCORE)
         AuctionHouseEntry const* ahEntry = AuctionHouseMgr::GetAuctionHouseEntry(unit->GetFaction());
-#elif AZEROTHCORE
-        AuctionHouseEntry const* ahEntry = AuctionHouseMgr::GetAuctionHouseEntry(unit->getFaction());
 #else
         AuctionHouseEntry const* ahEntry = AuctionHouseMgr::GetAuctionHouseEntry(unit);
 #endif
@@ -2260,12 +2335,12 @@ namespace LuaPlayer
             return 0;
 
         WorldPacket data(MSG_AUCTION_HELLO, 12);
+        data << unit->GET_GUID();
 #ifdef TRINITY
-        data << uint64(unit->GetGUID().GetCounter());
+        data << uint32(ahEntry->ID);
 #else
-        data << uint64(unit->GetGUIDLow());
-#endif
         data << uint32(ahEntry->houseId);
+#endif
         data << uint8(1);
 #ifdef CMANGOS
         player->GetSession()->SendPacket(data);
@@ -2372,6 +2447,21 @@ namespace LuaPlayer
     }
 
     /**
+     * Sends an update for the world state to the [Player]
+     *
+     * @param uint32 field
+     * @param uint32 value
+     */
+    int SendUpdateWorldState(lua_State* L, Player* player)
+    {
+        uint32 field = Eluna::CHECKVAL<uint32>(L, 2);
+        uint32 value = Eluna::CHECKVAL<uint32>(L, 3);
+
+        player->SendUpdateWorldState(field, value);
+        return 0;
+    }
+
+    /**
      * Forces the [Player] to log out
      *
      * @param bool saveToDb = true
@@ -2379,8 +2469,11 @@ namespace LuaPlayer
     int LogoutPlayer(lua_State* L, Player* player)
     {
         bool save = Eluna::CHECKVAL<bool>(L, 2, true);
-
+#ifndef CMANGOS
         player->GetSession()->LogoutPlayer(save);
+#else
+        player->GetSession()->LogoutPlayer();
+#endif
         return 0;
     }
 
@@ -2415,7 +2508,7 @@ namespace LuaPlayer
 #ifndef AZEROTHCORE
             player->UnbindInstance(map, (Difficulty)difficulty);
 #else
-            sInstanceSaveMgr->PlayerUnbindInstance(player->GetGUIDLow(), map, Difficulty(difficulty), true, player);
+            sInstanceSaveMgr->PlayerUnbindInstance(player->GetGUID(), map, Difficulty(difficulty), true, player);
 #endif//AZEROTHCORE
 #else//CLASSIC
         player->UnbindInstance(map);
@@ -2440,14 +2533,18 @@ namespace LuaPlayer
 #elif defined AZEROTHCORE
         for (uint8 i = 0; i < MAX_DIFFICULTY; ++i)
         {
-            const BoundInstancesMap& binds = sInstanceSaveMgr->PlayerGetBoundInstances(player->GetGUIDLow(), Difficulty(i));
+            const BoundInstancesMap& binds = sInstanceSaveMgr->PlayerGetBoundInstances(player->GetGUID(), Difficulty(i));
             for (BoundInstancesMap::const_iterator itr = binds.begin(); itr != binds.end();)
             {
                 if (itr->first != player->GetMapId())
-                    //player->UnbindInstance(itr, Difficulty(i));
-                    sInstanceSaveMgr->PlayerUnbindInstance(player->GetGUIDLow(), itr->first, Difficulty(i), true, player);
+                {
+                    sInstanceSaveMgr->PlayerUnbindInstance(player->GetGUID(), itr->first, Difficulty(i), true, player);
+                    itr = binds.begin();
+                }
                 else
+                {
                     ++itr;
+                }
             }
         }
 #else
@@ -2484,49 +2581,47 @@ namespace LuaPlayer
     }
 
     /**
-     * Repairs [Item] at specified position. Returns total repair cost 
+     * Repairs [Item] at specified position.
      *
      * @param uint16 position
      * @param bool cost = true
-     * @param float discountMod
-     * @param bool guildBank = false
-     * @return uint32 totalCost
+     * @param float discountMod = 1.0
      */
     int DurabilityRepair(lua_State* L, Player* player)
     {
         uint16 position = Eluna::CHECKVAL<uint16>(L, 2);
-        bool cost = Eluna::CHECKVAL<bool>(L, 3, true);
-        float discountMod = Eluna::CHECKVAL<float>(L, 4);
-        bool guildBank = Eluna::CHECKVAL<bool>(L, 5, false);
+        bool takeCost = Eluna::CHECKVAL<bool>(L, 3, true);
+        float discountMod = Eluna::CHECKVAL<float>(L, 4, 1.0f);
 
 #ifdef CLASSIC
-        Eluna::Push(L, player->DurabilityRepair(position, cost, discountMod));
+        player->DurabilityRepair(position, takeCost, discountMod);
+#elif defined(TRINITY)
+        player->DurabilityRepair(position, takeCost, discountMod);
 #else
-        Eluna::Push(L, player->DurabilityRepair(position, cost, discountMod, guildBank));
+        player->DurabilityRepair(position, takeCost, discountMod, false);
 #endif
-        return 1;
+        return 0;
     }
 
     /**
-     * Repairs all [Item]s. Returns total repair cost
+     * Repairs all [Item]s.
      *
-     * @param bool cost = true
-     * @param float discountMod = 1
+     * @param bool takeCost = true
+     * @param float discountMod = 1.0
      * @param bool guidBank = false
-     * @return uint32 totalCost
      */
     int DurabilityRepairAll(lua_State* L, Player* player)
     {
-        bool cost = Eluna::CHECKVAL<bool>(L, 2, true);
+        bool takeCost = Eluna::CHECKVAL<bool>(L, 2, true);
         float discountMod = Eluna::CHECKVAL<float>(L, 3, 1.0f);
         bool guildBank = Eluna::CHECKVAL<bool>(L, 4, false);
 
 #ifdef CLASSIC
-        Eluna::Push(L, player->DurabilityRepairAll(cost, discountMod));
+        player->DurabilityRepairAll(takeCost, discountMod);
 #else
-        Eluna::Push(L, player->DurabilityRepairAll(cost, discountMod, guildBank));
+        player->DurabilityRepairAll(takeCost, discountMod, guildBank);
 #endif
-        return 1;
+        return 0;
     }
 
     /**
@@ -2673,19 +2768,17 @@ namespace LuaPlayer
      * Removes the [Spell] from the [Player]
      *
      * @param uint32 entry : entry of a [Spell]
-     * @param bool disabled = false
-     * @param bool learnLowRank = true
      */
     int RemoveSpell(lua_State* L, Player* player)
     {
         uint32 entry = Eluna::CHECKVAL<uint32>(L, 2);
-        bool disabled = Eluna::CHECKVAL<bool>(L, 3, false);
-        bool learn_low_rank = Eluna::CHECKVAL<bool>(L, 4, true);
 
 #ifdef TRINITY
-        player->RemoveSpell(entry, disabled, learn_low_rank);
+        player->RemoveSpell(entry);
+#elif defined (AZEROTHCORE)
+        player->removeSpell(entry, SPEC_MASK_ALL, false);
 #else
-        player->removeSpell(entry, disabled, learn_low_rank);
+        player->removeSpell(entry);
 #endif
         return 0;
     }
@@ -2849,11 +2942,7 @@ namespace LuaPlayer
             {
                 if (CreatureTemplate const* creatureInfo = sObjectMgr->GetCreatureTemplate(creature))
                     for (uint16 z = 0; z < creatureCount; ++z)
-#ifndef AZEROTHCORE
                         player->KilledMonster(creatureInfo, ObjectGuid::Empty);
-#else
-                        player->KilledMonster(creatureInfo, 0);
-#endif
             }
             else if (creature < 0)
                 for (uint16 z = 0; z < creatureCount; ++z)
@@ -2871,7 +2960,11 @@ namespace LuaPlayer
             {
                 if (CreatureInfo const* cInfo = ObjectMgr::GetCreatureTemplate(creature))
                     for (uint16 z = 0; z < creaturecount; ++z)
+#ifndef CMANGOS
                         player->KilledMonster(cInfo, ObjectGuid());
+#else
+                        player->KilledMonster(cInfo, nullptr);
+#endif
             }
             else if (creature < 0)
             {
@@ -2888,7 +2981,11 @@ namespace LuaPlayer
             uint32 repValue = quest->GetRepObjectiveValue();
             uint32 curRep = player->GetReputationMgr().GetReputation(repFaction);
             if (curRep < repValue)
+#if defined(CMANGOS) && defined(TBC)
+                if (FactionEntry const* factionEntry = sFactionStore.LookupEntry<FactionEntry>(repFaction))
+#else
                 if (FactionEntry const* factionEntry = sFactionStore.LookupEntry(repFaction))
+#endif
                     player->GetReputationMgr().SetReputation(factionEntry, repValue);
         }
 
@@ -3040,7 +3137,7 @@ namespace LuaPlayer
      * @param string text
      * @param uint32 lang : language the [Player] will speak
      * @param [Player] receiver : is the [Player] that will receive the whisper, if TrinityCore
-     * @param uint64 guid : is the GUID of a [Player] that will receive the whisper, not TrinityCore
+     * @param ObjectGuid guid : is the GUID of a [Player] that will receive the whisper, not TrinityCore
      */
     int Whisper(lua_State* L, Player* player)
     {
@@ -3049,12 +3146,12 @@ namespace LuaPlayer
 #ifdef TRINITY
         Player* receiver = Eluna::CHECKOBJ<Player>(L, 4);
 #else
-        uint64 guid = Eluna::CHECKVAL<uint64>(L, 4);
+        ObjectGuid guid = Eluna::CHECKVAL<ObjectGuid>(L, 4);
 #endif
-#ifdef TRINITY
+#if defined(TRINITY) || defined(AZEROTHCORE)
         player->Whisper(text, (Language)lang, receiver);
 #else
-        player->Whisper(text, lang, ObjectGuid(guid));
+        player->Whisper(text, lang, guid);
 #endif
         return 0;
     }
@@ -3082,7 +3179,7 @@ namespace LuaPlayer
     {
         std::string text = Eluna::CHECKVAL<std::string>(L, 2);
         uint32 lang = Eluna::CHECKVAL<uint32>(L, 3);
-#ifdef TRINITY
+#if defined(TRINITY) || defined(AZEROTHCORE)
         player->Yell(text, (Language)lang);
 #else
         player->Yell(text, lang);
@@ -3100,7 +3197,7 @@ namespace LuaPlayer
     {
         std::string text = Eluna::CHECKVAL<std::string>(L, 2);
         uint32 lang = Eluna::CHECKVAL<uint32>(L, 3);
-#ifdef TRINITY
+#if defined(TRINITY) || defined(AZEROTHCORE)
         player->Say(text, (Language)lang);
 #else
         player->Say(text, lang);
@@ -3119,7 +3216,11 @@ namespace LuaPlayer
         uint32 xp = Eluna::CHECKVAL<uint32>(L, 2);
         Unit* victim = Eluna::CHECKOBJ<Unit>(L, 3, false);
 
+#ifndef CMANGOS
         player->GiveXP(xp, victim);
+#else
+        player->GiveXP(xp, nullptr);
+#endif
         return 0;
     }
 
@@ -3312,11 +3413,19 @@ namespace LuaPlayer
         {
             if (SkillLineEntry const* entry = sSkillLineStore.LookupEntry(i))
             {
+#ifdef TRINITY
+                if (entry->CategoryID == SKILL_CATEGORY_LANGUAGES || entry->CategoryID == SKILL_CATEGORY_GENERIC)
+                    continue;
+
+                if (player->HasSkill(entry->ID))
+                    player->UpdateSkill(entry->ID, step);
+#else
                 if (entry->categoryId == SKILL_CATEGORY_LANGUAGES || entry->categoryId == SKILL_CATEGORY_GENERIC)
                     continue;
 
                 if (player->HasSkill(entry->id))
                     player->UpdateSkill(entry->id, step);
+#endif
             }
         }
 
@@ -3366,6 +3475,11 @@ namespace LuaPlayer
 #elif defined TRINITY
         if (player->IsInFlight())
             player->FinishTaxiFlight();
+        else
+            player->SaveRecallPosition();
+#elif defined CMANGOS
+        if (player->IsTaxiFlying())
+            player->TaxiFlightInterrupt();
         else
             player->SaveRecallPosition();
 #else
@@ -3518,6 +3632,8 @@ namespace LuaPlayer
     {
 #ifdef TRINITY
         player->GetSpellHistory()->ResetAllCooldowns();
+#elif CMANGOS
+        player->RemoveAllCooldowns();
 #else
         player->RemoveAllSpellCooldown();
 #endif
@@ -3608,10 +3724,10 @@ namespace LuaPlayer
         WorldPacket data(SMSG_MESSAGECHAT, 100);
         data << uint8(channel);
         data << int32(LANG_ADDON);
-        data << uint64(player->GET_GUID());
+        data << player->GET_GUID();
 #ifndef CLASSIC
         data << uint32(0);
-        data << uint64(receiver->GET_GUID());
+        data << receiver->GET_GUID();
 #endif
         data << uint32(fullmsg.length() + 1);
         data << fullmsg;
@@ -3629,7 +3745,11 @@ namespace LuaPlayer
      */
     int KickPlayer(lua_State* /*L*/, Player* player)
     {
+#ifdef TRINITY
+        player->GetSession()->KickPlayer("PlayerMethods::KickPlayer Kick the player");
+#else
         player->GetSession()->KickPlayer();
+#endif
         return 0;
     }
 
@@ -3689,6 +3809,17 @@ namespace LuaPlayer
         return 0;
     }
 
+#if !defined(CLASSIC)
+    /**
+     * Remove cooldowns on spells that have less than 10 minutes of cooldown from the [Player], similarly to when you enter an arena.
+     */
+    int RemoveArenaSpellCooldowns(lua_State* /*L*/, Player* player)
+    {
+        player->RemoveArenaSpellCooldowns();
+        return 0;
+    }
+#endif
+
     /**
      * Resurrects the [Player].
      *
@@ -3731,15 +3862,19 @@ namespace LuaPlayer
         bool _code = Eluna::CHECKVAL<bool>(L, 6, false);
         const char* _promptMsg = Eluna::CHECKVAL<const char*>(L, 7, "");
         uint32 _money = Eluna::CHECKVAL<uint32>(L, 8, 0);
-#if defined TRINITY || AZEROTHCORE
+#if defined(TRINITY)
+        player->PlayerTalkClass->GetGossipMenu().AddMenuItem(-1, GossipOptionIcon(_icon), msg, _sender, _intid, _promptMsg, _money, _code);
+#elif defined(AZEROTHCORE)
         player->PlayerTalkClass->GetGossipMenu().AddMenuItem(-1, _icon, msg, _sender, _intid, _promptMsg, _money, _code);
-#else
-#ifndef CLASSIC
+#elif defined(CMANGOS) && !defined(CLASSIC)
+        player->GetPlayerMenu()->GetGossipMenu().AddMenuItem(_icon, msg, _sender, _intid, _promptMsg, _money, _code);
+#elif defined(CMANGOS) && defined(CLASSIC)
+        player->GetPlayerMenu()->GetGossipMenu().AddMenuItem(_icon, msg, _sender, _intid, _promptMsg, _code);
+#elif !defined(CLASSIC) && !defined(CMANGOS)
         player->PlayerTalkClass->GetGossipMenu().AddMenuItem(_icon, msg, _sender, _intid, _promptMsg, _money, _code);
 #else
         player->PlayerTalkClass->GetGossipMenu().AddMenuItem(_icon, msg, _sender, _intid, _promptMsg, _code);
 #endif
-#endif//TRINITY
         return 0;
     }
 
@@ -3752,6 +3887,8 @@ namespace LuaPlayer
     {
 #if defined TRINITY || AZEROTHCORE
         player->PlayerTalkClass->SendCloseGossip();
+#elif CMANGOS
+        player->GetPlayerMenu()->CloseGossip();
 #else
         player->PlayerTalkClass->CloseGossip();
 #endif
@@ -3779,9 +3916,17 @@ namespace LuaPlayer
         if (sender->GetTypeId() == TYPEID_PLAYER)
         {
             uint32 menu_id = Eluna::CHECKVAL<uint32>(L, 4);
+#ifndef CMANGOS
             player->PlayerTalkClass->GetGossipMenu().SetMenuId(menu_id);
+#else
+            player->GetPlayerMenu()->GetGossipMenu().SetMenuId(menu_id);
+#endif
         }
+#ifndef CMANGOS
         player->PlayerTalkClass->SendGossipMenu(npc_text, sender->GET_GUID());
+#else
+        player->GetPlayerMenu()->SendGossipMenu(npc_text, sender->GET_GUID());
+#endif
         return 0;
     }
 
@@ -3795,7 +3940,11 @@ namespace LuaPlayer
      */
     int GossipClearMenu(lua_State* /*L*/, Player* player)
     {
+#ifndef CMANGOS
         player->PlayerTalkClass->ClearMenus();
+#else
+        player->GetPlayerMenu()->ClearMenus();
+#endif
         return 0;
     }
 
@@ -3883,7 +4032,11 @@ namespace LuaPlayer
         if (!quest)
             return 0;
 
+#ifndef CMANGOS
         player->PlayerTalkClass->SendQuestGiverQuestDetails(quest, player->GET_GUID(), activateAccept);
+#else
+        player->GetPlayerMenu()->SendQuestGiverQuestDetails(quest, player->GET_GUID(), activateAccept);
+#endif
         return 0;
     }
 
@@ -3926,7 +4079,11 @@ namespace LuaPlayer
 
         // Get correct existing group if any
         Group* group = player->GetGroup();
+#ifndef CMANGOS
         if (group && group->isBGGroup())
+#else
+        if (group && group->IsBattleGroup())
+#endif
             group = player->GetOriginalGroup();
 
         bool success = false;
@@ -4081,7 +4238,7 @@ namespace LuaPlayer
     /*int KillGOCredit(lua_State* L, Player* player)
     {
     uint32 entry = Eluna::CHECKVAL<uint32>(L, 2);
-    uint64 guid = Eluna::CHECKVAL<uint64>(L, 3);
+    ObjectGuid guid = Eluna::CHECKVAL<ObjectGuid>(L, 3);
     player->KillCreditGO(entry, guid);
     return 0;
     }*/
