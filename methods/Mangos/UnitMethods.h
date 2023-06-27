@@ -1935,7 +1935,7 @@ namespace LuaUnit
         float maxHeight = E->CHECKVAL<float>(6);
         uint32 id = E->CHECKVAL<uint32>(7, 0);
 
-#if WOTLK
+#if defined(WOTLK) || defined(CATA)
         unit->GetMotionMaster()->MoveJump(x, y, z, zSpeed, maxHeight, id);
 #else
         Position pos(x, y, z);
@@ -2178,7 +2178,11 @@ namespace LuaUnit
 
         for (uint32 i = 0; i < MAX_EFFECT_INDEX; ++i)
         {
+#if defined (CATA)
+            uint8 eff = SpellEffectIndex(i);
+#else
             uint8 eff = spellEntry->Effect[i];
+#endif
             if (eff >= TOTAL_SPELL_EFFECTS)
                 continue;
 
