@@ -53,7 +53,7 @@ namespace LuaQuest
     {
         uint32 flag = E->CHECKVAL<uint32>(2);
 
-        E->Push(quest->HasFlag(flag));
+        E->Push(quest->HasFlag(QuestFlags(flag)));
         return 1;
     }
 
@@ -90,6 +90,7 @@ namespace LuaQuest
         return 1;
     }
 
+#ifndef RETAIL
     /**
      * Returns the [Quest]'s level.
      *
@@ -111,6 +112,7 @@ namespace LuaQuest
         E->Push(quest->GetMinLevel());
         return 1;
     }
+#endif
 
     /**
      * Returns the next [Quest] entry ID.
@@ -165,7 +167,7 @@ namespace LuaQuest
      */
     int GetType(Eluna* E, Quest* quest)
     {
-#ifdef CATA
+#ifndef WOTLK
         E->Push(quest->GetQuestType());
 #else
         E->Push(quest->GetType());
@@ -188,9 +190,9 @@ namespace LuaQuest
     {
         // Getters
         { "GetId", &LuaQuest::GetId },
-        { "GetLevel", &LuaQuest::GetLevel },
+        //{ "GetLevel", &LuaQuest::GetLevel },
         { "GetMaxLevel", &LuaQuest::GetMaxLevel },
-        { "GetMinLevel", &LuaQuest::GetMinLevel },
+        //{ "GetMinLevel", &LuaQuest::GetMinLevel },
         { "GetNextQuestId", &LuaQuest::GetNextQuestId },
         { "GetPrevQuestId", &LuaQuest::GetPrevQuestId },
         { "GetNextQuestInChain", &LuaQuest::GetNextQuestInChain },

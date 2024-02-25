@@ -36,7 +36,7 @@ namespace LuaObject
         uint16 index = E->CHECKVAL<uint16>(2);
         uint32 flag = E->CHECKVAL<uint32>(3);
 
-        E->Push(obj->HasFlag(index, flag));
+        E->Push(obj->HasDynamicFlag(flag));
         return 1;
     }
 
@@ -50,7 +50,7 @@ namespace LuaObject
         E->Push(obj->IsInWorld());
         return 1;
     }
-
+#ifndef RETAIL
     /**
      * Returns the data at the specified index, casted to a signed 32-bit integer.
      *
@@ -123,6 +123,7 @@ namespace LuaObject
         E->Push(obj->GetUInt16Value(index, offset));
         return 1;
     }
+#endif
 
     /**
      * Returns the scale/size of the [Object].
@@ -209,6 +210,7 @@ namespace LuaObject
         return 1;
     }
 
+#ifndef RETAIL
     /**
      * Returns the data at the specified index, casted to an unsigned 64-bit integer.
      *
@@ -221,6 +223,7 @@ namespace LuaObject
         E->Push(obj->GetUInt64Value(index));
         return 1;
     }
+#endif
 
     /**
      * Sets the specified flag in the data value at the specified index.
@@ -237,10 +240,11 @@ namespace LuaObject
         uint16 index = E->CHECKVAL<uint16>(2);
         uint32 flag = E->CHECKVAL<uint32>(3);
 
-        obj->SetFlag(index, flag);
+        obj->SetDynamicFlag(flag);
         return 0;
     }
 
+#ifndef RETAIL
     /**
      * Sets the data at the specified index to the given value, converted to a signed 32-bit integer.
      *
@@ -347,19 +351,6 @@ namespace LuaObject
     }
 
     /**
-     * Sets the [Object]'s scale/size to the given value.
-     *
-     * @param float scale
-     */
-    int SetScale(Eluna* E, Object* obj)
-    {
-        float size = E->CHECKVAL<float>(2);
-
-        obj->SetObjectScale(size);
-        return 0;
-    }
-
-    /**
      * Sets the data at the specified index to the given value, converted to an unsigned 64-bit integer.
      *
      * @param uint16 index
@@ -370,6 +361,19 @@ namespace LuaObject
         uint16 index = E->CHECKVAL<uint16>(2);
         uint64 value = E->CHECKVAL<uint64>(3);
         obj->SetUInt64Value(index, value);
+        return 0;
+    }
+#endif
+    /**
+     * Sets the [Object]'s scale/size to the given value.
+     *
+     * @param float scale
+     */
+    int SetScale(Eluna* E, Object* obj)
+    {
+        float size = E->CHECKVAL<float>(2);
+
+        obj->SetObjectScale(size);
         return 0;
     }
 
@@ -384,7 +388,7 @@ namespace LuaObject
         uint16 index = E->CHECKVAL<uint16>(2);
         uint32 flag = E->CHECKVAL<uint32>(3);
 
-        obj->RemoveFlag(index, flag);
+        obj->RemoveDynamicFlag(flag);
         return 0;
     }
 
@@ -459,16 +463,17 @@ namespace LuaObject
         { "GetEntry", &LuaObject::GetEntry },
         { "GetGUID", &LuaObject::GetGUID },
         { "GetGUIDLow", &LuaObject::GetGUIDLow },
-        { "GetInt32Value", &LuaObject::GetInt32Value },
-        { "GetUInt32Value", &LuaObject::GetUInt32Value },
-        { "GetFloatValue", &LuaObject::GetFloatValue },
-        { "GetByteValue", &LuaObject::GetByteValue },
-        { "GetUInt16Value", &LuaObject::GetUInt16Value },
-        { "GetUInt64Value", &LuaObject::GetUInt64Value },
+        //{ "GetInt32Value", &LuaObject::GetInt32Value },
+        //{ "GetUInt32Value", &LuaObject::GetUInt32Value },
+        //{ "GetFloatValue", &LuaObject::GetFloatValue },
+        //{ "GetByteValue", &LuaObject::GetByteValue },
+        //{ "GetUInt16Value", &LuaObject::GetUInt16Value },
+        //{ "GetUInt64Value", &LuaObject::GetUInt64Value },
         { "GetScale", &LuaObject::GetScale },
         { "GetTypeId", &LuaObject::GetTypeId },
 
         // Setters
+#ifndef RETAIL
         { "SetInt32Value", &LuaObject::SetInt32Value },
         { "SetUInt32Value", &LuaObject::SetUInt32Value },
         { "UpdateUInt32Value", &LuaObject::UpdateUInt32Value },
@@ -477,6 +482,16 @@ namespace LuaObject
         { "SetUInt16Value", &LuaObject::SetUInt16Value },
         { "SetInt16Value", &LuaObject::SetInt16Value },
         { "SetUInt64Value", &LuaObject::SetUInt64Value },
+#else
+        { "SetInt32Value", nullptr, METHOD_REG_NONE },
+        { "SetUInt32Value", nullptr, METHOD_REG_NONE },
+        { "UpdateUInt32Value", nullptr, METHOD_REG_NONE },
+        { "SetFloatValue", nullptr, METHOD_REG_NONE },
+        { "SetByteValue", nullptr, METHOD_REG_NONE },
+        { "SetUInt16Value", nullptr, METHOD_REG_NONE },
+        { "SetInt16Value", nullptr, METHOD_REG_NONE },
+        { "SetUInt64Value", nullptr, METHOD_REG_NONE },
+#endif
         { "SetScale", &LuaObject::SetScale },
         { "SetFlag", &LuaObject::SetFlag },
 

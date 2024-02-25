@@ -82,7 +82,11 @@ struct ElunaCreatureAI : CreatureAI
         if (!me->GetEluna()->UpdateAI(me, diff))
         {
 #if defined TRINITY || AZEROTHCORE || VMANGOS
+#ifdef RETAIL
+            if (!me->HasUnitFlag(UNIT_FLAG_IMMUNE_TO_NPC))
+#else
             if (!me->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_NPC))
+#endif
                 ScriptedAI::UpdateAI(diff);
 #elif defined CMANGOS
             if (!me->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_NPC))

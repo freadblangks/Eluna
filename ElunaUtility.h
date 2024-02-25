@@ -57,22 +57,21 @@
 typedef QueryResult ElunaQuery;
 #define GET_GUID                GetGUID
 #define HIGHGUID_PLAYER         HighGuid::Player
-#define HIGHGUID_UNIT           HighGuid::Unit
+#define HIGHGUID_UNIT           HighGuid::Creature
 #define HIGHGUID_ITEM           HighGuid::Item
 #define HIGHGUID_GAMEOBJECT     HighGuid::GameObject
 #define HIGHGUID_PET            HighGuid::Pet
 #define HIGHGUID_TRANSPORT      HighGuid::Transport
 #define HIGHGUID_VEHICLE        HighGuid::Vehicle
-#define HIGHGUID_CONTAINER      HighGuid::Container
+//#define HIGHGUID_CONTAINER      HighGuid::Container
 #define HIGHGUID_DYNAMICOBJECT  HighGuid::DynamicObject
 #define HIGHGUID_CORPSE         HighGuid::Corpse
-#define HIGHGUID_MO_TRANSPORT   HighGuid::Mo_Transport
+#define HIGHGUID_MO_TRANSPORT   HighGuid::Transport
 #define HIGHGUID_INSTANCE       HighGuid::Instance
-#define HIGHGUID_GROUP          HighGuid::Group
+//#define HIGHGUID_GROUP          HighGuid::Group
 #endif
 
 #ifdef TRINITY
-#ifdef WOTLK
 #include "fmt/printf.h"
 #define ELUNA_LOG_TC_FMT(TC_LOG_MACRO, ...) \
     try { \
@@ -84,11 +83,6 @@ typedef QueryResult ElunaQuery;
 #define ELUNA_LOG_INFO(...)     ELUNA_LOG_TC_FMT(TC_LOG_INFO, __VA_ARGS__);
 #define ELUNA_LOG_ERROR(...)    ELUNA_LOG_TC_FMT(TC_LOG_ERROR, __VA_ARGS__);
 #define ELUNA_LOG_DEBUG(...)    ELUNA_LOG_TC_FMT(TC_LOG_DEBUG, __VA_ARGS__);
-#else
-#define ELUNA_LOG_INFO(...)     TC_LOG_INFO("eluna", __VA_ARGS__);
-#define ELUNA_LOG_ERROR(...)    TC_LOG_ERROR("eluna", __VA_ARGS__);
-#define ELUNA_LOG_DEBUG(...)    TC_LOG_DEBUG("eluna", __VA_ARGS__);
-#endif
 #elif defined(AZEROTHCORE)
 #define ELUNA_LOG_INFO(...)     LOG_INFO("eluna", __VA_ARGS__);
 #define ELUNA_LOG_ERROR(...)    LOG_ERROR("eluna", __VA_ARGS__);

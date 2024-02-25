@@ -6,7 +6,6 @@
 
 #ifndef CREATUREMETHODS_H
 #define CREATUREMETHODS_H
-
 /***
  * Non-[Player] controlled [Unit]s (i.e. NPCs).
  *
@@ -142,6 +141,7 @@ namespace LuaCreature
         return 1;
     }
 
+#ifndef RETAIL
     /**
      * Returns `true` if the [Creature] can start attacking nearby hostile [Unit]s,
      *   and returns `false` otherwise.
@@ -153,6 +153,7 @@ namespace LuaCreature
         E->Push(!creature->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_NPC));
         return 1;
     }
+#endif
 
     /**
      * Returns `true` if the [Creature] can move through deep water,
@@ -166,6 +167,7 @@ namespace LuaCreature
         return 1;
     }
 
+#ifndef RETAIL
     /**
      * Returns `true` if the [Creature] can move on land,
      *   and returns `false` otherwise.
@@ -177,6 +179,7 @@ namespace LuaCreature
         E->Push(creature->CanWalk());
         return 1;
     }
+#endif
 
     /**
      * Returns `true` if the [Creature] is returning to its spawn position from combat,
@@ -198,7 +201,7 @@ namespace LuaCreature
      */
     int IsElite(Eluna* E, Creature* creature)
     {
-        E->Push(creature->isElite());
+        E->Push(creature->IsElite());
         return 1;
     }
 
@@ -274,7 +277,7 @@ namespace LuaCreature
     {
         uint32 spell = E->CHECKVAL<uint32>(2);
 
-        if (const SpellInfo* info = sSpellMgr->GetSpellInfo(spell))
+        if (const SpellInfo* info = sSpellMgr->GetSpellInfo(spell, DIFFICULTY_NONE))
             E->Push(info->GetCategory() && creature->GetSpellHistory()->HasCooldown(spell));
         else
             E->Push(false);
@@ -351,6 +354,7 @@ namespace LuaCreature
         return 1;
     }
 
+#ifndef RETAIL
     /**
      * Returns true if the [Creature] is damaged enough for looting
      *
@@ -361,6 +365,7 @@ namespace LuaCreature
         E->Push(creature->IsDamageEnoughForLootingAndReward());
         return 1;
     }
+#endif
 
     /**
      * Returns true if the [Creature] can start attacking specified target
@@ -419,6 +424,7 @@ namespace LuaCreature
         return 1;
     }
 
+#ifndef RETAIL
     /**
      * Returns the current waypoint path ID of the [Creature].
      *
@@ -429,6 +435,7 @@ namespace LuaCreature
         E->Push(creature->GetWaypointPath());
         return 1;
     }
+#endif
 
     /**
      * Returns the current waypoint ID of the [Creature].
@@ -483,7 +490,7 @@ namespace LuaCreature
         return 1;
     }
 
-
+#ifndef RETAIL
     /**
      * Returns the [Group] that can loot this [Creature].
      *
@@ -505,6 +512,7 @@ namespace LuaCreature
         E->Push(creature->GetLootRecipient());
         return 1;
     }
+#endif
 
     /**
      * Returns the [Creature]'s script name.
@@ -560,8 +568,11 @@ namespace LuaCreature
     {
         uint32 spell = E->CHECKVAL<uint32>(2);
 
-        if (SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spell))
-            E->Push(creature->GetSpellHistory()->GetRemainingCooldown(spellInfo));
+        if (SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spell, DIFFICULTY_NONE))
+        {
+            Milliseconds remainingCooldown = creature->GetSpellHistory()->GetRemainingCooldown(spellInfo);
+            E->Push(remainingCooldown.count());
+        }
         else
             E->Push(0);
 
@@ -794,7 +805,7 @@ namespace LuaCreature
         float threat = E->CHECKVAL<float>(3, true);
         uint32 spell = E->CHECKVAL<uint32>(4, 0);
 
-        creature->GetThreatManager().AddThreat(victim, threat, spell ? sSpellMgr->GetSpellInfo(spell) : NULL, true, true);
+        creature->GetThreatManager().AddThreat(victim, threat, spell ? sSpellMgr->GetSpellInfo(spell, DIFFICULTY_NONE) : NULL, true, true);
         return 0;
     }
 
@@ -865,6 +876,7 @@ namespace LuaCreature
         return 0;
     }
 
+#ifndef RETAIL
     /**
      * Returns the [Creature]'s NPC flags.
      *
@@ -878,6 +890,7 @@ namespace LuaCreature
         E->Push(creature->GetUInt32Value(UNIT_NPC_FLAGS));
         return 1;
     }
+#endif
 
     /**
      * Returns the [Creature]'s Extra flags.
@@ -893,6 +906,7 @@ namespace LuaCreature
         return 1;
     }
 
+#ifndef RETAIL
     /**
      * Returns the [Creature]'s rank as defined in the creature template.
      *
@@ -903,8 +917,9 @@ namespace LuaCreature
         E->Push(creature->GetCreatureTemplate()->rank);
         return 1;
     }
+#endif
 
-#ifndef CATA
+#ifdef WOTLK
     /**
      * Returns the [Creature]'s shield block value.
      *
@@ -948,6 +963,7 @@ namespace LuaCreature
         return 1;
     }
 
+#ifndef RETAIL
     /**
      * Sets the [Creature]'s NPC flags to `flags`.
      *
@@ -960,6 +976,7 @@ namespace LuaCreature
         creature->SetUInt32Value(UNIT_NPC_FLAGS, flags);
         return 0;
     }
+#endif
 
     /**
      * Sets the [Creature]'s ReactState to `state`.
@@ -1035,6 +1052,7 @@ namespace LuaCreature
         return 0;
     }
 
+#ifndef RETAIL
     /**
      * Equips given [Item]s to the [Unit]. Using 0 removes the equipped [Item]
      *
@@ -1070,6 +1088,7 @@ namespace LuaCreature
 
         return 0;
     }
+#endif
 
     /**
      * Sets whether the [Creature] gives reputation or not.
@@ -1207,6 +1226,7 @@ namespace LuaCreature
         return 0;
     }
 
+#ifndef RETAIL
     /**
      * Make the [Creature] start following its waypoint path.
      */
@@ -1215,6 +1235,7 @@ namespace LuaCreature
         creature->GetMotionMaster()->MovePath(creature->GetWaypointPath(), true);
         return 0;
     }
+#endif
 
     /**
      * Make the [Creature] call for assistance in combat from other nearby [Creature]s.
@@ -1433,15 +1454,15 @@ namespace LuaCreature
         { "GetRespawnDelay", &LuaCreature::GetRespawnDelay },
         { "GetWanderRadius", &LuaCreature::GetWanderRadius },
         { "GetCurrentWaypointId", &LuaCreature::GetCurrentWaypointId },
-        { "GetWaypointPath", &LuaCreature::GetWaypointPath },
+        //{ "GetWaypointPath", &LuaCreature::GetWaypointPath },
         { "GetLootMode", &LuaCreature::GetLootMode },
-        { "GetLootRecipient", &LuaCreature::GetLootRecipient },
-        { "GetLootRecipientGroup", &LuaCreature::GetLootRecipientGroup },
-        { "GetNPCFlags", &LuaCreature::GetNPCFlags },
+        //{ "GetLootRecipient", &LuaCreature::GetLootRecipient },
+        //{ "GetLootRecipientGroup", &LuaCreature::GetLootRecipientGroup },
+        //{ "GetNPCFlags", &LuaCreature::GetNPCFlags },
         { "GetExtraFlags", &LuaCreature::GetExtraFlags },
-        { "GetRank", &LuaCreature::GetRank },
+        //{ "GetRank", &LuaCreature::GetRank },
 #ifndef CATA
-        { "GetShieldBlockValue", &LuaCreature::GetShieldBlockValue },
+        //{ "GetShieldBlockValue", &LuaCreature::GetShieldBlockValue },
 #endif
         { "GetDBTableGUIDLow", &LuaCreature::GetDBTableGUIDLow },
         { "GetCreatureFamily", &LuaCreature::GetCreatureFamily },
@@ -1451,7 +1472,7 @@ namespace LuaCreature
         { "SetRegeneratingHealth", &LuaCreature::SetRegeneratingHealth },
         { "SetHover", &LuaCreature::SetHover },
         { "SetDisableGravity", &LuaCreature::SetDisableGravity },
-        { "SetAggroEnabled", &LuaCreature::SetAggroEnabled },
+        //{ "SetAggroEnabled", &LuaCreature::SetAggroEnabled },
         { "SetNoCallAssistance", &LuaCreature::SetNoCallAssistance },
         { "SetNoSearchAssistance", &LuaCreature::SetNoSearchAssistance },
         { "SetDefaultMovementType", &LuaCreature::SetDefaultMovementType },
@@ -1460,12 +1481,12 @@ namespace LuaCreature
         { "SetInCombatWithZone", &LuaCreature::SetInCombatWithZone },
         { "SetDisableReputationGain", &LuaCreature::SetDisableReputationGain },
         { "SetLootMode", &LuaCreature::SetLootMode },
-        { "SetNPCFlags", &LuaCreature::SetNPCFlags },
+        //{ "SetNPCFlags", &LuaCreature::SetNPCFlags },
         { "SetReactState", &LuaCreature::SetReactState },
         { "SetDeathState", &LuaCreature::SetDeathState },
         { "SetWalk", &LuaCreature::SetWalk },
         { "SetHomePosition", &LuaCreature::SetHomePosition },
-        { "SetEquipmentSlots", &LuaCreature::SetEquipmentSlots },
+        //{ "SetEquipmentSlots", &LuaCreature::SetEquipmentSlots },
 
         // Boolean
         { "IsRegeneratingHealth", &LuaCreature::IsRegeneratingHealth },
@@ -1478,9 +1499,9 @@ namespace LuaCreature
         { "IsElite", &LuaCreature::IsElite },
         { "IsInEvadeMode", &LuaCreature::IsInEvadeMode },
         { "HasCategoryCooldown", &LuaCreature::HasCategoryCooldown },
-        { "CanWalk", &LuaCreature::CanWalk },
+        //{ "CanWalk", &LuaCreature::CanWalk },
         { "CanSwim", &LuaCreature::CanSwim },
-        { "CanAggro", &LuaCreature::CanAggro },
+        //{ "CanAggro", &LuaCreature::CanAggro },
         { "CanStartAttack", &LuaCreature::CanStartAttack },
         { "HasSearchedAssistance", &LuaCreature::HasSearchedAssistance },
         { "IsTappedBy", &LuaCreature::IsTappedBy },
@@ -1489,7 +1510,7 @@ namespace LuaCreature
         { "IsTargetableForAttack", &LuaCreature::IsTargetableForAttack },
         { "CanCompleteQuest", &LuaCreature::CanCompleteQuest },
         { "IsReputationGainDisabled", &LuaCreature::IsReputationGainDisabled },
-        { "IsDamageEnoughForLootingAndReward", &LuaCreature::IsDamageEnoughForLootingAndReward },
+        //{ "IsDamageEnoughForLootingAndReward", &LuaCreature::IsDamageEnoughForLootingAndReward },
         { "HasLootMode", &LuaCreature::HasLootMode },
         { "HasSpell", &LuaCreature::HasSpell },
         { "HasQuest", &LuaCreature::HasQuest },
@@ -1509,7 +1530,7 @@ namespace LuaCreature
         { "RemoveLootMode", &LuaCreature::RemoveLootMode },
         { "SaveToDB", &LuaCreature::SaveToDB },
         { "SelectVictim", &LuaCreature::SelectVictim },
-        { "MoveWaypoint", &LuaCreature::MoveWaypoint },
+        //{ "MoveWaypoint", &LuaCreature::MoveWaypoint },
         { "UpdateEntry", &LuaCreature::UpdateEntry },
         { "AddThreat", &LuaCreature::AddThreat },
         { "ClearThreat", &LuaCreature::ClearThreat },

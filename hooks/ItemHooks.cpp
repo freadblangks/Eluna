@@ -66,7 +66,7 @@ bool Eluna::OnUse(Player* pPlayer, Item* pItem, SpellCastTargets const& targets)
     WorldPacket data(SMSG_INVENTORY_CHANGE_FAILURE, 18);
     data << uint8(59); // EQUIP_ERR_NONE / EQUIP_ERR_CANT_BE_DISENCHANTED
     data << guid;
-    data << ObjectGuid(uint64(0));
+    data << uint64(0);
     data << uint8(0);
 #ifdef CMANGOS
     pPlayer->GetSession()->SendPacket(data);
@@ -112,9 +112,17 @@ bool Eluna::OnItemUse(Player* pPlayer, Item* pItem, SpellCastTargets const& targ
 
 bool Eluna::OnExpire(Player* pPlayer, ItemTemplate const* pProto)
 {
+#if defined TRINITY && (defined CATA || defined RETAIL)
+    START_HOOK_WITH_RETVAL(ITEM_EVENT_ON_EXPIRE, pProto->BasicData->ID, false);
+#else
     START_HOOK_WITH_RETVAL(ITEM_EVENT_ON_EXPIRE, pProto->ItemId, false);
-    HookPush(pPlayer);
-    HookPush(pProto->ItemId);
+#endif
+    Push(pPlayer);
+#if defined TRINITY && (defined CATA || defined RETAIL)
+    Push(pProto->BasicData->ID);
+#else
+    Push(pProto->ItemId);
+#endif
     return CallAllFunctionsBool(ItemEventBindings, key);
 }
 

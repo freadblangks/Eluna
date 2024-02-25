@@ -26,6 +26,16 @@ void Eluna::OnAddMember(Guild* guild, Player* player, uint32 plRank)
     CallAllFunctions(GuildEventBindings, key);
 }
 
+#ifdef RETAIL
+void Eluna::OnRemoveMember(Guild* guild, ObjectGuid guid, bool isDisbanding)
+{
+    START_HOOK(GUILD_EVENT_ON_REMOVE_MEMBER);
+    HookPush(guild);
+    HookPush(guid);
+    HookPush(isDisbanding);
+    CallAllFunctions(GuildEventBindings, key);
+}
+#else
 void Eluna::OnRemoveMember(Guild* guild, Player* player, bool isDisbanding)
 {
     START_HOOK(GUILD_EVENT_ON_REMOVE_MEMBER);
@@ -34,6 +44,7 @@ void Eluna::OnRemoveMember(Guild* guild, Player* player, bool isDisbanding)
     HookPush(isDisbanding);
     CallAllFunctions(GuildEventBindings, key);
 }
+#endif
 
 void Eluna::OnMOTDChanged(Guild* guild, const std::string& newMotd)
 {
@@ -94,7 +105,7 @@ void Eluna::OnMemberWitdrawMoney(Guild* guild, Player* player, uint32& amount, b
     CleanUpStack(4);
 }
 
-#ifdef CATA
+#if defined CATA || defined RETAIL
 void Eluna::OnMemberWitdrawMoney(Guild* guild, Player* player, uint64& amount, bool isRepair)
 {
     START_HOOK(GUILD_EVENT_ON_MONEY_WITHDRAW);
@@ -149,7 +160,7 @@ void Eluna::OnMemberDepositMoney(Guild* guild, Player* player, uint32& amount)
     CleanUpStack(3);
 }
 
-#ifdef CATA
+#if defined CATA || defined RETAIL
 void Eluna::OnMemberDepositMoney(Guild* guild, Player* player, uint64& amount)
 {
     START_HOOK(GUILD_EVENT_ON_MONEY_DEPOSIT);

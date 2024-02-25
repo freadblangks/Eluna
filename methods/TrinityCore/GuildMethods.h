@@ -52,7 +52,7 @@ namespace LuaGuild
      */
     int GetMemberCount(Eluna* E, Guild* guild)
     {
-        E->Push(guild->GetMemberCount());
+        E->Push(guild->GetMembersCount());
         return 1;
     }
 
@@ -124,7 +124,7 @@ namespace LuaGuild
         return 1;
     }
 
-#ifndef CATA
+#ifdef WOTLK
     /**
      * Sets the leader of this [Guild]
      *
@@ -184,7 +184,7 @@ namespace LuaGuild
         WorldPacket* data = E->CHECKOBJ<WorldPacket>(2);
         uint8 ranked = E->CHECKVAL<uint8>(3);
 
-        guild->BroadcastPacketToRank(data, ranked);
+        guild->BroadcastPacketToRank(data, GuildRankId(ranked));
         return 0;
     }
 
@@ -217,7 +217,7 @@ namespace LuaGuild
 
         CharacterDatabaseTransaction trans(nullptr);
 
-        guild->AddMember(trans, player->GET_GUID(), rankId);
+        guild->AddMember(trans, player->GET_GUID(), GuildRankId(rankId));
         return 0;
     }
 
@@ -255,7 +255,7 @@ namespace LuaGuild
 
         CharacterDatabaseTransaction trans(nullptr);
 
-        guild->ChangeMemberRank(trans, player->GET_GUID(), newRank);
+        guild->ChangeMemberRank(trans, player->GET_GUID(), GuildRankId(newRank));
         return 0;
     }
     
@@ -274,7 +274,7 @@ namespace LuaGuild
         // Setters
         { "SetBankTabText", &LuaGuild::SetBankTabText, METHOD_REG_WORLD }, // World state method only in multistate
         { "SetMemberRank", &LuaGuild::SetMemberRank, METHOD_REG_WORLD }, // World state method only in multistate
-#ifndef CATA
+#ifdef WOTLK
         { "SetLeader", &LuaGuild::SetLeader, METHOD_REG_WORLD }, // World state method only in multistate
 #endif
 

@@ -45,6 +45,7 @@ namespace LuaItem
         return 1;
     }
 
+#ifndef RETAIL
     /**
      * Returns 'true' if the [Item] is not bound to the [Player] specified, 'false' otherwise
      *
@@ -58,6 +59,7 @@ namespace LuaItem
         E->Push(item->IsBindedNotWith(player));
         return 1;
     }
+#endif
 
     /**
      * Returns 'true' if the [Item] is locked, 'false' otherwise
@@ -233,6 +235,7 @@ namespace LuaItem
     }
 #endif
 
+#ifndef RETAIL
     /**
      * Returns the chat link of the [Item]
      *
@@ -261,7 +264,7 @@ namespace LuaItem
             return luaL_argerror(E->L, 2, "valid LocaleConstant expected");
 
         const ItemTemplate* temp = item->GetTemplate();
-#ifdef CATA
+#if defined CATA || RETAIL
         std::string name = temp->ExtendedData->Display1->Str[locale];
         if (ItemLocale const* il = eObjectMgr->GetItemLocale(temp->BasicData->ID))
 #else
@@ -319,6 +322,7 @@ namespace LuaItem
         E->Push(oss.str());
         return 1;
     }
+#endif
 
     /**
      * Returns GUID of the [Player] who currently owns the [Item]
@@ -403,6 +407,7 @@ namespace LuaItem
         return 1;
     }
 
+#ifndef RETAIL
     /**
      * Returns the spell ID tied to the [Item] by spell index
      *
@@ -412,7 +417,7 @@ namespace LuaItem
     int GetSpellId(Eluna* E, Item* item)
     {
         uint32 index = E->CHECKVAL<uint32>(2);
-        if (index >= MAX_ITEM_PROTO_SPELLS)
+        if (index >= MAX_ITEM_PROTO_FLAGS)
             return luaL_argerror(E->L, 2, "valid SpellIndex expected");
 
 #ifdef CATA
@@ -442,6 +447,7 @@ namespace LuaItem
 #endif
         return 1;
     }
+#endif
 
     /**
      * Returns class of the [Item]
@@ -450,7 +456,7 @@ namespace LuaItem
      */
     int GetClass(Eluna* E, Item* item)
     {
-#ifdef CATA
+#ifndef WOTLK
         E->Push(item->GetTemplate()->GetClass());
 #else
         E->Push(item->GetTemplate()->Class);
@@ -465,7 +471,7 @@ namespace LuaItem
      */
     int GetSubClass(Eluna* E, Item* item)
     {
-#ifdef CATA
+#ifndef WOTLK
         E->Push(item->GetTemplate()->GetSubClass());
 #else
         E->Push(item->GetTemplate()->SubClass);
@@ -480,7 +486,7 @@ namespace LuaItem
     */
     int GetItemId(Eluna* E, Item* item)
     {
-        E->Push(item->GetTemplate()->ItemId);
+        E->Push(item->GetTemplate()->BasicData->ID);
         return 1;
     }
 
@@ -491,7 +497,7 @@ namespace LuaItem
      */
     int GetName(Eluna* E, Item* item)
     {
-#ifdef CATA
+#ifndef WOTLK
         E->Push(item->GetTemplate()->GetDefaultLocaleName());
 #else
         E->Push(item->GetTemplate()->Name1);
@@ -499,6 +505,7 @@ namespace LuaItem
         return 1;
     }
 
+#ifndef RETAIL
     /**
      * Returns the display ID of the [Item]
      *
@@ -506,13 +513,14 @@ namespace LuaItem
      */
     int GetDisplayId(Eluna* E, Item* item)
     {
-#ifdef CATA
-        E->Push(item->GetTemplate()->GetDisplayID());
+#ifndef WOTLK
+        E->Push(item->GetTemplate()->displ);
 #else
         E->Push(item->GetTemplate()->DisplayInfoID);
 #endif
         return 1;
     }
+#endif
 
     /**
      * Returns the quality of the [Item]
@@ -521,7 +529,7 @@ namespace LuaItem
      */
     int GetQuality(Eluna* E, Item* item)
     {
-#ifdef CATA
+#ifndef WOTLK
         E->Push(item->GetTemplate()->GetQuality());
 #else
         E->Push(item->GetTemplate()->Quality);
@@ -529,6 +537,7 @@ namespace LuaItem
         return 1;
     }
 
+#ifndef RETAIL
     /**
     * Returns the flags of the [Item]
     *
@@ -550,6 +559,7 @@ namespace LuaItem
         E->Push(item->GetTemplate()->Flags2);
         return 1;
     }
+#endif
 
     /**
     * Returns the extraFlags of the [Item]
@@ -569,7 +579,7 @@ namespace LuaItem
      */
     int GetBuyCount(Eluna* E, Item* item)
     {
-#ifdef CATA
+#ifndef WOTLK
         E->Push(item->GetTemplate()->GetBuyCount());
 #else
         E->Push(item->GetTemplate()->BuyCount);
@@ -584,7 +594,7 @@ namespace LuaItem
      */
     int GetBuyPrice(Eluna* E, Item* item)
     {
-#ifdef CATA
+#ifndef WOTLK
         E->Push(item->GetTemplate()->GetBuyPrice());
 #else
         E->Push(item->GetTemplate()->BuyPrice);
@@ -599,7 +609,7 @@ namespace LuaItem
      */
     int GetSellPrice(Eluna* E, Item* item)
     {
-#ifdef CATA
+#ifndef WOTLK
         E->Push(item->GetTemplate()->GetSellPrice());
 #else
         E->Push(item->GetTemplate()->SellPrice);
@@ -614,7 +624,7 @@ namespace LuaItem
      */
     int GetInventoryType(Eluna* E, Item* item)
     {
-#ifdef CATA
+#ifndef WOTLK
         E->Push(item->GetTemplate()->GetInventoryType());
 #else
         E->Push(item->GetTemplate()->InventoryType);
@@ -629,7 +639,7 @@ namespace LuaItem
      */
     int GetAllowableClass(Eluna* E, Item* item)
     {
-#ifdef CATA
+#ifndef WOTLK
         E->Push(item->GetTemplate()->GetAllowableClass());
 #else
         E->Push(item->GetTemplate()->AllowableClass);
@@ -637,6 +647,7 @@ namespace LuaItem
         return 1;
     }
 
+#ifndef RETAIL
     /**
      * Returns the [Player] races allowed to use this [Item]
      *
@@ -644,13 +655,14 @@ namespace LuaItem
      */
     int GetAllowableRace(Eluna* E, Item* item)
     {
-#ifdef CATA
+#ifndef WOTLK
         E->Push(item->GetTemplate()->GetAllowableRace());
 #else
         E->Push(item->GetTemplate()->AllowableRace);
 #endif
         return 1;
     }
+#endif
 
     /**
      * Returns the [Item]s level
@@ -659,7 +671,7 @@ namespace LuaItem
      */
     int GetItemLevel(Eluna* E, Item* item)
     {
-#ifdef CATA
+#ifndef WOTLK
         E->Push(item->GetTemplate()->GetBaseItemLevel());
 #else
         E->Push(item->GetTemplate()->ItemLevel);
@@ -676,6 +688,8 @@ namespace LuaItem
     {
 #ifdef CATA
         E->Push(item->GetTemplate()->GetRequiredLevel());
+#elif RETAIL
+        E->Push(item->GetTemplate()->GetBaseRequiredLevel());
 #else
         E->Push(item->GetTemplate()->RequiredLevel);
 #endif
@@ -695,6 +709,7 @@ namespace LuaItem
     }
 #endif
 
+#ifndef RETAIL
     /**
      * Returns the random property ID of this [Item]
      *
@@ -702,7 +717,7 @@ namespace LuaItem
      */
     int GetRandomProperty(Eluna* E, Item* item)
     {
-#ifdef CATA
+#ifndef WOTLK
         E->Push(item->GetTemplate()->GetRandomProperty());
 #else
         E->Push(item->GetTemplate()->RandomProperty);
@@ -717,13 +732,14 @@ namespace LuaItem
      */
     int GetRandomSuffix(Eluna* E, Item* item)
     {
-#ifdef CATA
+#ifndef WOTLK
         E->Push(item->GetTemplate()->GetRandomSuffix());
 #else
         E->Push(item->GetTemplate()->RandomSuffix);
 #endif
         return 1;
     }
+#endif
 
     /**
      * Returns the item set ID of this [Item]
@@ -732,7 +748,7 @@ namespace LuaItem
      */
     int GetItemSet(Eluna* E, Item* item)
     {
-#ifdef CATA
+#ifndef WOTLK
         E->Push(item->GetTemplate()->GetItemSet());
 #else
         E->Push(item->GetTemplate()->ItemSet);
@@ -880,31 +896,31 @@ namespace LuaItem
         { "GetSlot", &LuaItem::GetSlot },
         { "GetBagSlot", &LuaItem::GetBagSlot },
         { "GetEnchantmentId", &LuaItem::GetEnchantmentId },
-        { "GetSpellId", &LuaItem::GetSpellId },
-        { "GetSpellTrigger", &LuaItem::GetSpellTrigger },
-        { "GetItemLink", &LuaItem::GetItemLink },
+        //{ "GetSpellId", &LuaItem::GetSpellId },
+        //{ "GetSpellTrigger", &LuaItem::GetSpellTrigger },
+        //{ "GetItemLink", &LuaItem::GetItemLink },
         { "GetClass", &LuaItem::GetClass },
         { "GetSubClass", &LuaItem::GetSubClass },
         { "GetItemId", &LuaItem::GetItemId },
         { "GetName", &LuaItem::GetName },
-        { "GetDisplayId", &LuaItem::GetDisplayId },
+        //{ "GetDisplayId", &LuaItem::GetDisplayId },
         { "GetQuality", &LuaItem::GetQuality },
-        { "GetFlags", &LuaItem::GetFlags },
-        { "GetFlags2", &LuaItem::GetFlags2 },
-        { "GetExtraFlags", &LuaItem::GetExtraFlags },		
+        //{ "GetFlags", &LuaItem::GetFlags },
+        //{ "GetFlags2", &LuaItem::GetFlags2 },
+		{ "GetExtraFlags", &LuaItem::GetExtraFlags },
         { "GetBuyCount", &LuaItem::GetBuyCount },
         { "GetBuyPrice", &LuaItem::GetBuyPrice },
         { "GetSellPrice", &LuaItem::GetSellPrice },
         { "GetInventoryType", &LuaItem::GetInventoryType },
         { "GetAllowableClass", &LuaItem::GetAllowableClass },
-        { "GetAllowableRace", &LuaItem::GetAllowableRace },
+        //{ "GetAllowableRace", &LuaItem::GetAllowableRace },
         { "GetItemLevel", &LuaItem::GetItemLevel },
         { "GetRequiredLevel", &LuaItem::GetRequiredLevel },
 #ifndef CATA
-        { "GetStatsCount", &LuaItem::GetStatsCount },
+        //{ "GetStatsCount", &LuaItem::GetStatsCount },
 #endif
-        { "GetRandomProperty", &LuaItem::GetRandomProperty },
-        { "GetRandomSuffix", &LuaItem::GetRandomSuffix },
+        //{ "GetRandomProperty", &LuaItem::GetRandomProperty },
+        //{ "GetRandomSuffix", &LuaItem::GetRandomSuffix },
         { "GetItemSet", &LuaItem::GetItemSet },
         { "GetBagSize", &LuaItem::GetBagSize },
 
@@ -917,7 +933,7 @@ namespace LuaItem
         { "IsSoulBound", &LuaItem::IsSoulBound },
         { "IsBoundAccountWide", &LuaItem::IsBoundAccountWide },
         { "IsBoundByEnchant", &LuaItem::IsBoundByEnchant },
-        { "IsNotBoundToPlayer", &LuaItem::IsNotBoundToPlayer },
+        //{ "IsNotBoundToPlayer", &LuaItem::IsNotBoundToPlayer },
         { "IsLocked", &LuaItem::IsLocked },
         { "IsBag", &LuaItem::IsBag },
         { "IsCurrencyToken", &LuaItem::IsCurrencyToken },
@@ -930,8 +946,8 @@ namespace LuaItem
         { "HasQuest", &LuaItem::HasQuest },
         { "IsPotion", &LuaItem::IsPotion },
 #ifndef CATA
-        { "IsWeaponVellum", &LuaItem::IsWeaponVellum },
-        { "IsArmorVellum", &LuaItem::IsArmorVellum },
+        //{ "IsWeaponVellum", &LuaItem::IsWeaponVellum },
+        //{ "IsArmorVellum", &LuaItem::IsArmorVellum },
         { "IsRefundExpired", &LuaItem::IsRefundExpired },
 #endif
         { "IsConjuredConsumable", &LuaItem::IsConjuredConsumable },

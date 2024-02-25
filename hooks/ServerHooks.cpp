@@ -132,8 +132,44 @@ void Eluna::OnChange(Weather* /*weather*/, uint32 zone, WeatherState state, floa
     CallAllFunctions(ServerEventBindings, key);
 }
 
+#ifndef RETAIL
 // Auction House
-void Eluna::OnAdd(AuctionHouseObject* /*ah*/, AuctionEntry* entry)
+void Eluna::OnAdd(AuctionHouseObject* ah, AuctionPosting* entry)
+{
+#ifdef AZEROTHCORE
+    Player* owner = eObjectAccessor()FindPlayer(entry->owner);
+#else
+    Player* owner = eObjectAccessor()FindPlayer(MAKE_NEW_GUID(entry->owner, 0, HIGHGUID_PLAYER));
+#endif
+
+#ifdef TRINITY
+    Item* item = eAuctionMgr->GetAItem(entry->itemGUIDLow);
+    uint32 expiretime = entry->expire_time;
+#elif AZEROTHCORE
+    Item* item = eAuctionMgr->GetAItem(entry->item_guid);
+    uint32 expiretime = entry->expire_time;
+#else
+    Item* item = eAuctionMgr->GetAItem(entry->itemGuidLow);
+    uint32 expiretime = entry->expireTime;
+#endif
+
+    if (!owner || !item)
+        return;
+
+    START_HOOK(AUCTION_EVENT_ON_ADD);
+    Push(entry->Id);
+    Push(owner);
+    Push(item);
+    Push(expiretime);
+    Push(entry->buyout);
+    Push(entry->startbid);
+    Push(entry->bid);
+    Push(entry->bidder);
+    CallAllFunctions(ServerEventBindings, key);
+}
+
+#ifndef RETAIL
+void Eluna::OnAdd(AuctionHouseObject* , AuctionEntry* entry)
 {
 #ifdef AZEROTHCORE
     Player* owner = eObjectAccessor()FindPlayer(entry->owner);
@@ -166,6 +202,7 @@ void Eluna::OnAdd(AuctionHouseObject* /*ah*/, AuctionEntry* entry)
     HookPush(entry->bidder);
     CallAllFunctions(ServerEventBindings, key);
 }
+#endif
 
 void Eluna::OnRemove(AuctionHouseObject* /*ah*/, AuctionEntry* entry)
 {
@@ -271,6 +308,7 @@ void Eluna::OnExpire(AuctionHouseObject* /*ah*/, AuctionEntry* entry)
     HookPush(entry->bidder);
     CallAllFunctions(ServerEventBindings, key);
 }
+#endif
 
 void Eluna::OnOpenStateChange(bool open)
 {

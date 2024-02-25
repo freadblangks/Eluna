@@ -84,10 +84,18 @@ public:
      * These are responsible for serializing/deserializing the instance's
      *   data table to/from the core.
      */
+#if defined(TRINITY) && defined(RETAIL)
+    void Load(const char* data);
+#else
     void Load(const char* data) override;
+#endif
 #if defined TRINITY || AZEROTHCORE
     // Simply calls Save, since the functions are a bit different in name and data types on different cores
+#if defined(TRINITY) && defined(RETAIL)
+    std::string GetSaveData()
+#else
     std::string GetSaveData() override
+#endif
     {
         return Save();
     }

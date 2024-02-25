@@ -58,6 +58,7 @@ namespace LuaSpell
         return 1;
     }
 
+#ifndef RETAIL
     /**
      * Returns the power cost of the [Spell].
      *
@@ -68,6 +69,7 @@ namespace LuaSpell
         E->Push(spell->GetPowerCost());
         return 1;
     }
+#endif
 
     /**
      * Returns the spell duration of the [Spell].
@@ -177,7 +179,7 @@ namespace LuaSpell
         { "GetCastTime", &LuaSpell::GetCastTime },
         { "GetEntry", &LuaSpell::GetEntry },
         { "GetDuration", &LuaSpell::GetDuration },
-        { "GetPowerCost", &LuaSpell::GetPowerCost },
+        //{ "GetPowerCost", &LuaSpell::GetPowerCost },
         { "GetTargetDest", &LuaSpell::GetTargetDest },
         { "GetTarget", &LuaSpell::GetTarget },
 

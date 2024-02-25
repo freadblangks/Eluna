@@ -58,7 +58,7 @@ namespace LuaUnit
         int32 immunity = E->CHECKVAL<int32>(2);
         bool apply = E->CHECKVAL<bool>(3, true);
 
-        unit->ApplySpellImmune(0, 5, immunity, apply);
+        unit->ApplySpellImmune(0, SpellImmunity(IMMUNITY_MECHANIC), immunity, apply);
         return 0;
     }
     /**
@@ -117,7 +117,7 @@ namespace LuaUnit
      */
     int IsRooted(Eluna* E, Unit* unit)
     {
-        E->Push(unit->IsRooted() || unit->HasUnitMovementFlag(MOVEMENTFLAG_ROOT));
+        E->Push(unit->HasRootAura() || unit->HasUnitMovementFlag(MOVEMENTFLAG_ROOT));
         return 1;
     }
 
@@ -231,7 +231,7 @@ namespace LuaUnit
      */
     int IsSpiritGuide(Eluna* E, Unit* unit)
     {
-        E->Push(unit->IsSpiritGuide());
+        E->Push(unit->IsSpiritService());
         return 1;
     }
 
@@ -656,6 +656,7 @@ namespace LuaUnit
         return 1;
     }
 
+#ifndef RETAIL
     /**
      * Returns the [Unit]'s base spell power
      *
@@ -672,6 +673,7 @@ namespace LuaUnit
         E->Push(unit->GetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + spellschool));
         return 1;
     }
+#endif
 
     /**
      * Returns the [Unit]'s current victim target or nil.
@@ -997,6 +999,7 @@ namespace LuaUnit
         return 1;
     }
 
+#ifndef RETAIL
     /**
      * Returns the [Unit]'s class' name in given or default locale or nil.
      *
@@ -1066,6 +1069,7 @@ namespace LuaUnit
         E->Push(entry->Name[locale]);
         return 1;
     }
+#endif
 
     /**
      * Returns the [Unit]'s faction ID.
@@ -1379,7 +1383,7 @@ namespace LuaUnit
         {
             player->GiveLevel(newlevel);
             player->InitTalentForLevel();
-            player->SetUInt32Value(PLAYER_XP, 0);
+           // player->SetUInt32Value(PLAYER_XP, 0);
         }
         else
             unit->SetLevel(newlevel);
@@ -1550,7 +1554,7 @@ namespace LuaUnit
     int SetNativeDisplayId(Eluna* E, Unit* unit)
     {
         uint32 model = E->CHECKVAL<uint32>(2);
-#ifndef CATA
+#ifdef WOTLK
         unit->SetNativeDisplayId(model);
 #else
         unit->SetDisplayId(model, true);
@@ -1646,6 +1650,7 @@ namespace LuaUnit
         return 0;
     }
 
+#ifndef RETAIL
     /**
      * Sets the [Unit]'s FFA flag on or off.
      *
@@ -1691,6 +1696,7 @@ namespace LuaUnit
 
         return 0;
     }
+#endif
 
     int SetCritterGUID(Eluna* E, Unit* unit)
     {
@@ -1801,6 +1807,7 @@ namespace LuaUnit
         return 0;
     }
 
+#ifndef RETAIL
     /**
      * Makes the [Unit] perform the given emote continuously.
      *
@@ -1813,6 +1820,7 @@ namespace LuaUnit
         unit->SetUInt32Value(UNIT_NPC_EMOTESTATE, emoteId);
         return 0;
     }
+#endif
 
     /**
      * Returns calculated percentage from Health
@@ -1836,6 +1844,7 @@ namespace LuaUnit
         return 1;
     }
 
+#ifndef RETAIL
     /**
      * Sends chat message to [Player]
      *
@@ -1862,6 +1871,7 @@ namespace LuaUnit
         target->GetSession()->SendPacket(&data);
         return 0;
     }
+#endif
 
     /**
      * Stops the [Unit]'s movement
@@ -1977,7 +1987,7 @@ namespace LuaUnit
     {
         Unit* target = E->CHECKOBJ<Unit>(2);
         uint32 time = E->CHECKVAL<uint32>(3, 0);
-        unit->GetMotionMaster()->MoveFleeing(target, time);
+        unit->GetMotionMaster()->MoveFleeing(target, Milliseconds(time));
         return 0;
     }
 
@@ -2124,7 +2134,7 @@ namespace LuaUnit
         uint32 spell = E->CHECKVAL<uint32>(3);
         bool triggered = E->CHECKVAL<bool>(4, false);
 
-        SpellInfo const* spellEntry = sSpellMgr->GetSpellInfo(spell);
+        SpellInfo const* spellEntry = sSpellMgr->GetSpellInfo(spell, DIFFICULTY_NONE);
         if (!spellEntry)
             return 0;
 
@@ -2132,6 +2142,7 @@ namespace LuaUnit
         return 0;
     }
 
+#ifndef RETAIL
     /**
      * Casts the [Spell] at target [Unit] with custom basepoints or casters.
      * See also [Unit:CastSpell].
@@ -2176,6 +2187,7 @@ namespace LuaUnit
         unit->CastSpell(target, spell, args);
         return 0;
     }
+#endif
 
     /**
      * Makes the [Unit] cast the spell to the given coordinates, used for area effect spells.
@@ -2269,7 +2281,7 @@ namespace LuaUnit
         uint32 spell = E->CHECKVAL<uint32>(2);
         Unit* target = E->CHECKOBJ<Unit>(3);
 
-        SpellInfo const* spellEntry = sSpellMgr->GetSpellInfo(spell);
+        SpellInfo const* spellEntry = sSpellMgr->GetSpellInfo(spell, DIFFICULTY_NONE);
         if (!spellEntry)
             return 1;
 
@@ -2354,6 +2366,7 @@ namespace LuaUnit
         return 0;
     }
 
+#ifndef RETAIL
     /**
      * Makes the [Unit] damage the target [Unit]
      *
@@ -2434,6 +2447,7 @@ namespace LuaUnit
         unit->DealSpellDamage(&dmgInfo, true);
         return 0;
     }
+#endif
 
     /**
      * Makes the [Unit] heal the target [Unit] with given spell
@@ -2450,7 +2464,7 @@ namespace LuaUnit
         uint32 amount = E->CHECKVAL<uint32>(4);
         bool critical = E->CHECKVAL<bool>(5, false);
 
-        if (const SpellInfo* info = sSpellMgr->GetSpellInfo(spell))
+        if (const SpellInfo* info = sSpellMgr->GetSpellInfo(spell, DIFFICULTY_NONE))
         {
             HealInfo healInfo(unit, target, amount, info, info->GetSchoolMask());
             unit->HealBySpell(healInfo, critical);
@@ -2568,8 +2582,8 @@ namespace LuaUnit
         { "GetClass", &LuaUnit::GetClass },
         { "GetRaceMask", &LuaUnit::GetRaceMask },
         { "GetClassMask", &LuaUnit::GetClassMask },
-        { "GetRaceAsString", &LuaUnit::GetRaceAsString },
-        { "GetClassAsString", &LuaUnit::GetClassAsString },
+        //{ "GetRaceAsString", &LuaUnit::GetRaceAsString },
+        //{ "GetClassAsString", &LuaUnit::GetClassAsString },
         { "GetAura", &LuaUnit::GetAura },
         { "GetFaction", &LuaUnit::GetFaction },
         { "GetCurrentSpell", &LuaUnit::GetCurrentSpell },
@@ -2591,7 +2605,7 @@ namespace LuaUnit
         { "GetVictim", &LuaUnit::GetVictim },
         { "GetSpeed", &LuaUnit::GetSpeed },
         { "GetStat", &LuaUnit::GetStat },
-        { "GetBaseSpellPower", &LuaUnit::GetBaseSpellPower },
+        //{ "GetBaseSpellPower", &LuaUnit::GetBaseSpellPower },
         { "GetVehicleKit", &LuaUnit::GetVehicleKit },
         { "GetVehicle", &LuaUnit::GetVehicle },
         { "GetMovementType", &LuaUnit::GetMovementType },
@@ -2614,8 +2628,8 @@ namespace LuaUnit
         { "SetConfused", &LuaUnit::SetConfused },
         { "SetFeared", &LuaUnit::SetFeared },
         { "SetPvP", &LuaUnit::SetPvP },
-        { "SetFFA", &LuaUnit::SetFFA },
-        { "SetSanctuary", &LuaUnit::SetSanctuary },
+        //{ "SetFFA", &LuaUnit::SetFFA },
+        //{ "SetSanctuary", &LuaUnit::SetSanctuary },
         { "SetCanFly", &LuaUnit::SetCanFly },
         { "SetVisible", &LuaUnit::SetVisible },
         { "SetOwnerGUID", &LuaUnit::SetOwnerGUID },
@@ -2687,14 +2701,14 @@ namespace LuaUnit
         { "SendUnitSay", &LuaUnit::SendUnitSay },
         { "SendUnitYell", &LuaUnit::SendUnitYell },
         { "CastSpell", &LuaUnit::CastSpell },
-        { "CastCustomSpell", &LuaUnit::CastCustomSpell },
+        //{ "CastCustomSpell", &LuaUnit::CastCustomSpell },
         { "CastSpellAoF", &LuaUnit::CastSpellAoF },
         { "Kill", &LuaUnit::Kill },
         { "StopSpellCast", &LuaUnit::StopSpellCast },
         { "InterruptSpell", &LuaUnit::InterruptSpell },
-        { "SendChatMessageToPlayer", &LuaUnit::SendChatMessageToPlayer },
+        //{ "SendChatMessageToPlayer", &LuaUnit::SendChatMessageToPlayer },
         { "PerformEmote", &LuaUnit::PerformEmote },
-        { "EmoteState", &LuaUnit::EmoteState },
+        //{ "EmoteState", &LuaUnit::EmoteState },
         { "CountPctFromCurHealth", &LuaUnit::CountPctFromCurHealth },
         { "CountPctFromMaxHealth", &LuaUnit::CountPctFromMaxHealth },
         { "Dismount", &LuaUnit::Dismount },
@@ -2719,7 +2733,7 @@ namespace LuaUnit
         { "MoveStop", &LuaUnit::MoveStop },
         { "MoveExpire", &LuaUnit::MoveExpire },
         { "MoveClear", &LuaUnit::MoveClear },
-        { "DealDamage", &LuaUnit::DealDamage },
+        //{ "DealDamage", &LuaUnit::DealDamage },
         { "DealHeal", &LuaUnit::DealHeal },
 
         // Not implemented methods

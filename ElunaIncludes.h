@@ -15,8 +15,10 @@
 #include "CellImpl.h"
 #include "Chat.h"
 #include "Channel.h"
+#ifndef RETAIL
 #include "DBCStores.h"
-#if defined CATA && defined TRINITY
+#endif
+#if (defined CATA || defined RETAIL) && defined TRINITY
 #include "DB2Stores.h"
 #endif
 #include "GameEventMgr.h"
@@ -141,7 +143,7 @@
 #endif
 #endif
 
-#if (defined(TRINITY) && defined(CATA))
+#if (defined CATA || defined RETAIL) && defined TRINITY
 typedef OpcodeServer            OpcodesList;
 
 #elif !defined CLASSIC

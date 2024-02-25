@@ -142,7 +142,7 @@ bool Eluna::OnGossipSelect(Player* pPlayer, Creature* pCreature, uint32 sender, 
     auto original_menu = *pPlayer->GetPlayerMenu();
     pPlayer->GetPlayerMenu()->ClearMenus();
 #else
-    auto original_menu = *pPlayer->PlayerTalkClass;
+    auto original_menu = pPlayer->PlayerTalkClass->GetGossipMenu().GetMenuId();
     pPlayer->PlayerTalkClass->ClearMenus();
 #endif
     HookPush(pPlayer);
@@ -154,7 +154,7 @@ bool Eluna::OnGossipSelect(Player* pPlayer, Creature* pCreature, uint32 sender, 
 #if defined CMANGOS && !defined(CATA)
         *pPlayer->GetPlayerMenu() = original_menu;
 #else
-        *pPlayer->PlayerTalkClass = original_menu;
+        pPlayer->PlayerTalkClass->GetGossipMenu().SetMenuId(original_menu);
 #endif
     }
     return preventDefault;
@@ -167,7 +167,7 @@ bool Eluna::OnGossipSelectCode(Player* pPlayer, Creature* pCreature, uint32 send
     auto original_menu = *pPlayer->GetPlayerMenu();
     pPlayer->GetPlayerMenu()->ClearMenus();
 #else
-    auto original_menu = *pPlayer->PlayerTalkClass;
+    auto original_menu = pPlayer->PlayerTalkClass->GetGossipMenu().GetMenuId();
     pPlayer->PlayerTalkClass->ClearMenus();
 #endif
     HookPush(pPlayer);
@@ -180,7 +180,7 @@ bool Eluna::OnGossipSelectCode(Player* pPlayer, Creature* pCreature, uint32 send
 #if defined CMANGOS &&!defined(CATA)
         *pPlayer->GetPlayerMenu() = original_menu;
 #else
-        *pPlayer->PlayerTalkClass = original_menu;
+        pPlayer->PlayerTalkClass->GetGossipMenu().SetMenuId(original_menu);
 #endif
     }
     return preventDefault;

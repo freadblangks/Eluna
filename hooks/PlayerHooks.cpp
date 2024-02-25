@@ -26,6 +26,16 @@ using namespace Hooks;
     if (!PlayerEventBindings->HasBindingsFor(key))\
         return RETVAL;
 
+#ifdef RETAIL
+void Eluna::OnLearnTalents(Player* pPlayer, uint32 talentId, uint32 spellid)
+{
+    START_HOOK(PLAYER_EVENT_ON_LEARN_TALENTS);
+    HookPush(pPlayer);
+    HookPush(talentId);
+    HookPush(spellid);
+    CallAllFunctions(PlayerEventBindings, key);
+}
+#else
 void Eluna::OnLearnTalents(Player* pPlayer, uint32 talentId, uint32 talentRank, uint32 spellid)
 {
     START_HOOK(PLAYER_EVENT_ON_LEARN_TALENTS);
@@ -35,6 +45,7 @@ void Eluna::OnLearnTalents(Player* pPlayer, uint32 talentId, uint32 talentRank, 
     HookPush(spellid);
     CallAllFunctions(PlayerEventBindings, key);
 }
+#endif
 
 void Eluna::OnSkillChange(Player* pPlayer, uint32 skillId, uint32 skillValue)
 {
@@ -280,7 +291,7 @@ void Eluna::OnMoneyChanged(Player* pPlayer, int32& amount)
     CleanUpStack(2);
 }
 
-#ifdef CATA
+#if defined CATA || defined RETAIL
 void Eluna::OnMoneyChanged(Player* pPlayer, int64& amount)
 {
     START_HOOK(PLAYER_EVENT_ON_MONEY_CHANGE);

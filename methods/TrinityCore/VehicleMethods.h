@@ -72,7 +72,7 @@ namespace LuaVehicle
         Unit* passenger = E->CHECKOBJ<Unit>(2);
         int8 seatId = E->CHECKVAL<int8>(3);
 
-#ifndef CATA
+#ifdef WOTLK
         vehicle->AddPassenger(passenger, seatId);
 #else
         vehicle->AddVehiclePassenger(passenger, seatId);
@@ -110,5 +110,4 @@ namespace LuaVehicle
         { NULL, NULL, METHOD_REG_NONE }
     };
 }
-
 #endif // VEHICLEMETHODS_H

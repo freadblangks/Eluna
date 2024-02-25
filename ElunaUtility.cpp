@@ -10,7 +10,11 @@
 #include "Object.h"
 #include "Unit.h"
 #include "GameObject.h"
+#ifdef RETAIL
+#include "DB2Stores.h"
+#else
 #include "DBCStores.h"
+#endif
 #else
 #include "World/World.h"
 #include "Entities/Object.h"
@@ -101,11 +105,11 @@ bool ElunaUtil::WorldObjectInRangeCheck::operator()(WorldObject* u)
             {
                 if (i_obj_fact)
                 {
-#if ((defined TRINITY || AZEROTHCORE || CMANGOS || VMANGOS) && !defined CATA)
-                    if ((i_obj_fact->IsHostileTo(*target->GetFactionTemplateEntry())) != (i_hostile == 1))
-                        return false;
-#elif defined CATA && defined TRINITY
+#if ((defined CATA || RETAIL) && defined TRINITY)
                     if ((i_obj_fact->IsHostileTo(target->GetFactionTemplateEntry())) != (i_hostile == 1))
+                        return false;
+#elif ((defined TRINITY || AZEROTHCORE || CMANGOS || VMANGOS) && !defined CATA)
+                    if ((i_obj_fact->IsHostileTo(*target->GetFactionTemplateEntry())) != (i_hostile == 1))
                         return false;
 #elif defined CATA && defined CMANGOS
                     if ((i_obj_fact->IsHostileTo(*target->GetFactionTemplateEntry())) != (i_hostile == 1))

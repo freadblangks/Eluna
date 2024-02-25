@@ -16,6 +16,7 @@
 #include "ElunaUtility.h"
 #include "ElunaCreatureAI.h"
 #include "ElunaInstanceAI.h"
+#include <sstream>
 
 extern "C"
 {
@@ -786,12 +787,12 @@ int Eluna::Register(uint8 regtype, uint32 entry, ObjectGuid guid, uint32 instanc
         case Hooks::REGTYPE_PACKET:
             if (event_id < Hooks::PACKET_EVENT_COUNT)
             {
-                if (entry >= NUM_MSG_TYPES)
+                /*if (entry >= NUM_MSG_TYPES)
                 {
                     luaL_unref(L, LUA_REGISTRYINDEX, functionRef);
                     luaL_error(L, "Couldn't find a creature with (ID: %d)!", entry);
                     return 0; // Stack: (empty)
-                }
+                }*/
 
                 auto key = EntryKey<Hooks::PacketEvents>((Hooks::PacketEvents)event_id, entry);
                 bindingID = PacketEventBindings->Insert(key, functionRef, shots);
@@ -972,13 +973,13 @@ int Eluna::Register(uint8 regtype, uint32 entry, ObjectGuid guid, uint32 instanc
 void Eluna::UpdateEluna(uint32 diff)
 {
     if (reload)
-#ifdef TRINITY
+#if defined TRINITY && defined WOTLK
         if(!GetQueryProcessor().HasPendingCallbacks())
 #endif
             _ReloadEluna();
 
     eventMgr->globalProcessor->Update(diff);
-#ifdef TRINITY
+#if defined TRINITY && defined WOTLK
     GetQueryProcessor().ProcessReadyCallbacks();
 #endif
 }

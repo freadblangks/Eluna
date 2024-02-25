@@ -8,7 +8,6 @@
 #define WORLDOBJECTMETHODS_H
 
 #include "LuaValue.h"
-
 /***
  * Inherits all methods from: [Object]
  */
@@ -43,7 +42,7 @@ namespace LuaWorldObject
      */
     int GetPhaseMask(Eluna* E, WorldObject* obj)
     {
-#ifdef CATA
+#if defined CATA || defined RETAIL
         EventMap event;
         E->Push(event.GetPhaseMask());
 #else
@@ -61,7 +60,7 @@ namespace LuaWorldObject
     int SetPhaseMask(Eluna* E, WorldObject* obj)
     {
         uint32 phaseMask = E->CHECKVAL<uint32>(2);
-#ifdef CATA
+#if defined CATA || defined RETAIL
         EventMap event;
         event.SetPhase(phaseMask);
 #else
@@ -1066,9 +1065,13 @@ namespace LuaWorldObject
         uint32 musicid = E->CHECKVAL<uint32>(2);
         Player* player = E->CHECKOBJ<Player>(3, false);
 
+#ifdef RETAIL
+        if (!sSoundKitStore.LookupEntry(musicid))
+            musicid = 0;
+#else
         if (!sSoundEntriesStore.LookupEntry(musicid))
             musicid = 0;
-
+#endif
         WorldPackets::Misc::PlayMusic playMusic(musicid);
         const WorldPacket* data = playMusic.Write();
 
@@ -1095,7 +1098,11 @@ namespace LuaWorldObject
     {
         uint32 soundId = E->CHECKVAL<uint32>(2);
         Player* player = E->CHECKOBJ<Player>(3, false);
+#ifdef RETAIL
+        if (!sSoundKitStore.LookupEntry(soundId))
+#else
         if (!sSoundEntriesStore.LookupEntry(soundId))
+#endif
             return 0;
 
         if (player)
@@ -1122,7 +1129,11 @@ namespace LuaWorldObject
     {
         uint32 soundId = E->CHECKVAL<uint32>(2);
         Player* player = E->CHECKOBJ<Player>(3, false);
+#ifdef RETAIL
+        if (!sSoundKitStore.LookupEntry(soundId))
+#else
         if (!sSoundEntriesStore.LookupEntry(soundId))
+#endif
             return 0;
 
         if (player)

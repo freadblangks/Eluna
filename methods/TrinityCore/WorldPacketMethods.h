@@ -42,6 +42,7 @@ namespace LuaPacket
         return 1;
     }
 
+#ifndef RETAIL
     /**
      * Sets the opcode of the [WorldPacket] to the specified opcode.
      *
@@ -56,6 +57,7 @@ namespace LuaPacket
         packet->SetOpcode((OpcodesList)opcode);
         return 0;
     }
+#endif
 
     /**
      * Reads and returns a signed 8-bit integer value from the [WorldPacket].
@@ -314,7 +316,7 @@ namespace LuaPacket
         { "GetSize", &LuaPacket::GetSize },
 
         // Setters
-        { "SetOpcode", &LuaPacket::SetOpcode },
+        //{ "SetOpcode", &LuaPacket::SetOpcode },
 
         // Readers
         { "ReadByte", &LuaPacket::ReadByte },
