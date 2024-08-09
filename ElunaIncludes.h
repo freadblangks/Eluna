@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2010 - 2016 Eluna Lua Engine <http://emudevs.com/>
+* Copyright (C) 2010 - 2024 Eluna Lua Engine <https://elunaluaengine.github.io/>
 * This program is free software licensed under GPL version 3
 * Please see the included DOCS/LICENSE.md for more information
 */
@@ -15,7 +15,12 @@
 #include "CellImpl.h"
 #include "Chat.h"
 #include "Channel.h"
+#ifndef RETAIL
 #include "DBCStores.h"
+#endif
+#if (defined CATA || defined RETAIL) && defined TRINITY
+#include "DB2Stores.h"
+#endif
 #include "GameEventMgr.h"
 #include "GossipDef.h"
 #include "GridNotifiers.h"
@@ -73,6 +78,7 @@
 
 #if defined TRINITY
 #include "SpellHistory.h"
+#include "MiscPackets.h"
 #endif
 
 #if defined AZEROTHCORE
@@ -95,10 +101,18 @@
 #include "Bag.h"
 #else
 #include "Config/Config.h"
-#ifdef CMANGOS
+#if defined CMANGOS && defined CATA
+#include "AI/BaseAI/AggressorAI.h"
+#include "Server/SQLStorages.h"
+#elif defined CMANGOS
 #include "AI/BaseAI/UnitAI.h"
+#include "Server/SQLStorages.h"
+#elif defined VMANGOS
+#include "BasicAI.h"
+#include "Bag.h"
 #else
 #include "AggressorAI.h"
+#include "SQLStorages.h"
 #endif
 #include "BattleGroundMgr.h"
 #ifndef CMANGOS
@@ -129,7 +143,10 @@
 #endif
 #endif
 
-#ifndef CLASSIC
+#if (defined CATA || defined RETAIL) && defined TRINITY
+typedef OpcodeServer            OpcodesList;
+
+#elif !defined CLASSIC
 typedef Opcodes                 OpcodesList;
 #endif
 
@@ -140,16 +157,31 @@ typedef Opcodes                 OpcodesList;
 #ifdef MANGOS
 #define CORE_NAME               "MaNGOS"
 #define CORE_VERSION            REVISION_NR
+#ifdef CATA
+#define NUM_MSG_TYPES           NUM_OPCODE_HANDLERS
+#endif
 #endif
 
 #ifdef CMANGOS
 #define CORE_NAME               "cMaNGOS"
 #define CORE_VERSION            REVISION_DATE " " REVISION_ID
+#ifdef CATA
+#define NUM_MSG_TYPES           MAX_OPCODE_TABLE_SIZE
+#endif
+#endif
+
+#ifdef VMANGOS
+#define CORE_NAME               "vMaNGOS"
+#define CORE_VERSION            REVISION_HASH
+#define DEFAULT_LOCALE          LOCALE_enUS
 #endif
 
 #ifdef TRINITY
 #define CORE_NAME               "TrinityCore"
 #define REGEN_TIME_FULL
+#ifdef CATA
+#define NUM_MSG_TYPES           NUM_OPCODE_HANDLERS
+#endif
 #endif
 
 #ifdef AZEROTHCORE
@@ -160,17 +192,12 @@ typedef Opcodes                 OpcodesList;
 #define CORE_VERSION            (GitRevision::GetFullVersion())
 #define eWorld                  (sWorld)
 #define eMapMgr                 (sMapMgr)
-#define eConfigMgr              (sConfigMgr)
 #define eGuildMgr               (sGuildMgr)
 #define eObjectMgr              (sObjectMgr)
 #define eAccountMgr             (sAccountMgr)
 #define eAuctionMgr             (sAuctionMgr)
 #define eGameEventMgr           (sGameEventMgr)
 #define eObjectAccessor()       ObjectAccessor::
-#endif
-
-#ifdef CATA
-#define NUM_MSG_TYPES           NUM_OPCODE_HANDLERS
 #endif
 
 #if !defined TRINITY && !AZEROTHCORE
@@ -187,10 +214,12 @@ typedef Opcodes                 OpcodesList;
 #define TOTAL_LOCALES           MAX_LOCALE
 #define TARGETICONCOUNT         TARGET_ICON_COUNT
 #define MAX_TALENT_SPECS        MAX_TALENT_SPEC_COUNT
+#ifndef VMANGOS
 #define TEAM_NEUTRAL            TEAM_INDEX_NEUTRAL
+#endif
 
 
-#if (defined(TBC) || defined(WOTLK) || defined(CATA)) && !defined(MANGOS)
+#if ((defined(CATA) && !defined(MANGOS)) || defined VMANGOS)
 #define PLAYER_FIELD_LIFETIME_HONORABLE_KILLS   PLAYER_FIELD_LIFETIME_HONORBALE_KILLS
 #endif
 
